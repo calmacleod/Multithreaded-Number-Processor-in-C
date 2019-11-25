@@ -78,7 +78,7 @@ int numPrimeFactors(unsigned long number)
     return(0);
 }
 /*************************************************************************/
-Purpose: the main function of the threads
+//Purpose: the main function of the threads
 
 void *threadMain(/*add parameters as needed */)
 
