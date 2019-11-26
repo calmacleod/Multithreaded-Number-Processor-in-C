@@ -2,6 +2,7 @@
 #include<stdlib.h>
 #include<unistd.h>
 #include<string.h>
+#include<signal.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 
@@ -31,9 +32,16 @@ Prototype int morph(char *number);
 
 int morph(char * number);
 
+void handleSignal(int);
+
+int spawnedProcess = 0;
+int finishedCount = 0;
+
 
 int main(int argc, char * argv[]){
     
+    signal(SIGUSR1, handleSignal);
+
     //Only 1 argument supplies
     if(argc == 1){
         printf("Please enter a binary file to be tested\nProper useage: ./multiFactor file \n");
@@ -73,12 +81,14 @@ int main(int argc, char * argv[]){
             printf("Error has occured in one of the proccesses\n");
             exit(1);
         }
+        spawnedProcess++;
     }
 
     //Wait for all child proccesses to finish, and everytime one does, add it to the sum
     int wpid, status, sum;
     sum = 0;
     while((wpid = waitpid(-1,&status,0)) > 0){
+        finishedCount++;
         sum += WEXITSTATUS(status);
     }
 
@@ -116,4 +126,8 @@ int morph(char * number){
     
     
     
+}
+
+void handleSignal(int sng){
+    printf("So far %d process have finished, and there are still %d left\n", finishedCount, (spawnedProcess-finishedCount));
 }
