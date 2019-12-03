@@ -34,14 +34,18 @@ typedef struct threadData {
 
 int numPrimeFactors(unsigned long number);
 
+void handlesignal(int);
+
 /***************************************************************/
 // Global Variables
 unsigned long totalNumPrimeFactors = 0;		// global value that holds the final result
 unsigned long *recordsToProcess = NULL;     // array that will hold al the numbers to be processed
 int numRecords = 0;                         // number of records in the array recordsToProcess
 
-pthread_mutex_t sumLock, arrayLock, toProcessLock; 
-int mutexCount = 3;
+int finishedThreads = 0;
+
+pthread_mutex_t sumLock, arrayLock, toProcessLock, finishedLock; 
+int mutexCount = 4;
 
 /*************************************************************/
 /*
@@ -123,12 +127,19 @@ void *threadMain(void *argvp)
 
     }
     
-    
+    //Increase whenever a thread finishes
+    pthread_mutex_lock(&finishedLock);
+    finishedThreads++;
+    pthread_mutex_unlock(&finishedLock);
+
+
 }
 
 /*************************************************************************/
 int main(int argc, char ** argv)
 {
+
+    signal(SIGUSR1, handlesignal);
 
     //Holds all threads;
     pthread_t tid[NUM_THREADS];
@@ -184,7 +195,7 @@ int main(int argc, char ** argv)
 
     
     //Array to hold all mutex
-    pthread_mutex_t mutexArr[3] = {sumLock, arrayLock, toProcessLock};
+    pthread_mutex_t mutexArr[4] = {sumLock, arrayLock, toProcessLock, finishedLock};
 
     //Initalize all my mutex
     for(int i = 0; i<mutexCount; i++){
@@ -218,6 +229,10 @@ int main(int argc, char ** argv)
     exit(0);
 }
 
-
+void handlesignal(int sig){
+    pthread_mutex_lock(&finishedLock);
+    printf("So far %d threads have finished and %d are still running\n", finishedThreads, ((NUM_THREADS) - 5));
+    pthread_mutex_unlock(&finishedLock);
+}
 
 
