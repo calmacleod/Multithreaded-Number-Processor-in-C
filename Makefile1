@@ -1,3 +1,5 @@
+Exec : numPrimeFactors multiSpawn
+
 multiSpawn : multiFactor.c
 	gcc -o multiSpawn multiFactor.c
 
